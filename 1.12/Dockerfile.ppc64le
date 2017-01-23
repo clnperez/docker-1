@@ -1,0 +1,26 @@
+FROM ppc64le/ubuntu:16.04
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+		ca-certificates \
+		curl \
+		openssl \
+        libltdl7 \
+        iptables \
+        && rm -rf /var/lib/apt/lists/*
+
+ENV DOCKER_BUCKET get.docker.com
+ENV DOCKER_VERSION 1.12.6
+ENV DOCKER_SHA256 cadc6025c841e034506703a06cf54204e51d0cadfae4bae62628ac648d82efdd
+
+RUN set -x \
+	&& curl -fSL "http://ftp.unicamp.br/pub/ppc64el/ubuntu/16_04/docker-${DOCKER_VERSION}-ppc64el/pool/main/d/docker-engine/docker-engine_${DOCKER_VERSION}-0~ubuntu-xenial_ppc64el.deb" -o docker.deb \
+	#&& echo "${DOCKER_SHA256} *docker.tgz" | sha256sum -c - \
+    && dpkg -i docker.deb || true \
+    && apt-get install -yf \
+	&& rm docker.deb \
+	&& docker -v
+
+COPY docker-entrypoint.sh /usr/local/bin/
+
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["sh"]
